@@ -127,12 +127,14 @@ public class RxKeyboard: NSObject, RxKeyboardType {
     self.panRecognizer.maximumNumberOfTouches = 1
     
     UIApplication.rx.didFinishLaunching // when RxKeyboard is initialized before UIApplication.window is created
+      .startWith(()) // when RxKeyboard is initialized after UIApplication.didFinishLaunching
+      .observe(on: MainScheduler.asyncInstance) // defer one runloop so the key window is connected
       .subscribe(onNext: { _ in
         let window = UIApplication.shared.connectedScenes
           .compactMap { $0 as? UIWindowScene }
           .flatMap { $0.windows }
           .last { $0.isKeyWindow }
-        
+
         window?.addGestureRecognizer(self.panRecognizer)
       })
       .disposed(by: self.disposeBag)
